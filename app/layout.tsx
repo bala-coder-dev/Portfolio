@@ -7,21 +7,8 @@ export const metadata: Metadata = {
   description: 'Portfolio of Balamurugan K, an aspiring software engineer building full-stack products and AI systems.',
   generator: 'v0.app',
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+    icon: '/bala-dev-mark.png',
+    apple: '/bala-dev-mark.png',
   },
 }
 

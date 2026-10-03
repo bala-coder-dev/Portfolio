@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { motion, useDragControls } from 'framer-motion'
 
 const quickPrompts = [
   "[ Chat with Bala's AI ]",
@@ -11,6 +12,25 @@ const quickPrompts = [
 type ChatMessage = {
   role: 'assistant' | 'visitor'
   text: string
+}
+
+async function fetchChatWithNetworkRetry(url: string, init: RequestInit) {
+  const maxAttempts = 3
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    let response: Response
+    try {
+      response = await fetch(url, init)
+    } catch (error) {
+      if (attempt === maxAttempts - 1) throw error
+      await new Promise((resolve) => window.setTimeout(resolve, 700 * 2 ** attempt))
+      continue
+    }
+
+    return response
+  }
+
+  throw new Error('The assistant could not answer right now. Please try again.')
 }
 
 export function DotMatrixCanvas() {
@@ -56,9 +76,9 @@ export function DotMatrixCanvas() {
           const offset = influence * 7
           const shiftX = distance ? (dx / distance) * offset : 0
           const shiftY = distance ? (dy / distance) * offset : 0
-          const radius = 0.8 + influence * 0.45
+          const radius = 0.9 + influence * 0.55
 
-          context.fillStyle = `rgba(67, 163, 151, ${0.13 + influence * 0.22})`
+          context.fillStyle = `rgba(83, 190, 176, ${0.2 + influence * 0.28})`
           context.beginPath()
           context.arc(x + shiftX, y + shiftY, radius, 0, Math.PI * 2)
           context.fill()
@@ -163,10 +183,27 @@ export function MagneticTargets() {
 
 export function PortfolioChat() {
   const [isOpen, setIsOpen] = useState(false)
+  const [showChatHint, setShowChatHint] = useState(false)
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isSending, setIsSending] = useState(false)
+  const [canDragChat, setCanDragChat] = useState(false)
+  const [isMinimized, setIsMinimized] = useState(false)
+  const [isMaximized, setIsMaximized] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const chatDragControls = useDragControls()
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setShowChatHint(true), 1800)
+    return () => window.clearTimeout(timeout)
+  }, [])
+
+  useEffect(() => {
+    const update = () => setCanDragChat(window.matchMedia('(min-width: 768px) and (pointer: fine)').matches)
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
 
   useEffect(() => {
     const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'
@@ -176,15 +213,19 @@ export function PortfolioChat() {
   const sendMessage = async (message: string) => {
     const text = message.trim()
     if (!text || isSending) return
+    const conversationHistory = messages.map((entry) => ({
+      role: entry.role === 'visitor' ? 'user' : 'assistant',
+      content: entry.text,
+    }))
     setMessages((current) => [...current, { role: 'visitor', text }])
     setInput('')
     setIsSending(true)
 
     try {
-      const response = await fetch('/api/chat', {
+      const response = await fetchChatWithNetworkRetry('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({ message: text, history: conversationHistory }),
       })
       const data: unknown = await response.json()
       const reply =
@@ -217,39 +258,81 @@ export function PortfolioChat() {
 
   return (
     <div className="portfolio-chat">
-      <section
+      {!isOpen && showChatHint && (
+        <div className="portfolio-chat-hint" role="status">
+          <img src="/chatbot-logo.png" alt="" className="h-9 w-9 rounded-md border border-fuchsia-400/20 bg-black object-cover" />
+          <span className="min-w-0">
+            <span className="block font-mono text-[10px] text-cyan-200">AI ASSISTANT</span>
+            <span className="mt-1 block text-xs text-zinc-200">Need a quick answer? Chat with my AI.</span>
+          </span>
+          <button
+            type="button"
+            onClick={() => setShowChatHint(false)}
+            aria-label="Dismiss chatbot hint"
+            className="self-start rounded px-1 text-zinc-500 transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-300"
+          >
+            ×
+          </button>
+        </div>
+      )}
+      <motion.section
         aria-label="Chat with Bala's portfolio assistant"
         aria-hidden={!isOpen}
-        className={`portfolio-chat-panel ${isOpen ? 'is-open' : ''}`}
+        className={`portfolio-chat-panel ${isOpen ? 'is-open' : ''} ${isMinimized ? 'is-minimized' : ''} ${isMaximized ? 'is-maximized' : ''}`}
+        drag={canDragChat && isOpen && !isMinimized && !isMaximized}
+        dragListener={false}
+        dragControls={chatDragControls}
+        dragConstraints={{ left: -280, right: 0, top: -420, bottom: 0 }}
+        dragElastic={0.05}
+        dragMomentum={false}
+        animate={{ opacity: isOpen ? 1 : 0, y: isOpen ? 0 : 10, scale: isOpen ? 1 : 0.98 }}
+        transition={{ duration: 0.2 }}
       >
-        <header className="flex items-center justify-between border-b border-teal-300/15 px-4 py-3">
-          <div>
-            <p className="font-mono text-xs text-teal-200">bala.assistant</p>
-            <p className="mt-1 font-mono text-[10px] text-zinc-500">LOCAL PORTFOLIO GUIDE</p>
+        <header className="portfolio-terminal-titlebar" onPointerDown={(event) => { if (canDragChat) chatDragControls.start(event) }}>
+          <div className="flex items-center gap-2" aria-hidden="true">
+            <button type="button" aria-label="Close chat window" className="desktop-window-dot bg-[#ff5f57]" onPointerDown={(event) => event.stopPropagation()} onClick={() => { setIsOpen(false); setIsMaximized(false); setIsMinimized(false) }} />
+            <button type="button" aria-label={isMinimized ? 'Restore chat window' : 'Minimize chat window'} className="desktop-window-dot bg-[#febc2e]" onPointerDown={(event) => event.stopPropagation()} onClick={() => setIsMinimized((value) => !value)} />
+            <button type="button" aria-label={isMaximized ? 'Restore chat window size' : 'Maximize chat window'} className="desktop-window-dot bg-[#28c840]" onPointerDown={(event) => event.stopPropagation()} onClick={() => { setIsMinimized(false); setIsMaximized((value) => !value) }} />
+          </div>
+          <div className="flex min-w-0 items-center gap-2">
+            <img src="/chatbot-logo.png" alt="" className="h-7 w-7 rounded border border-fuchsia-400/20 bg-black object-cover" />
+            <div className="min-w-0 text-center">
+              <p className="truncate font-mono text-[11px] text-zinc-200">AI ASSISTANT</p>
+            </div>
           </div>
           <button
             type="button"
-            onClick={() => setIsOpen(false)}
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={() => {
+              setIsOpen(false)
+              setIsMaximized(false)
+              setIsMinimized(false)
+              setShowChatHint(false)
+            }}
             aria-label="Close chat"
-            className="rounded p-2 font-mono text-zinc-400 transition hover:bg-white/5 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-300"
+            className="rounded px-2 py-1 font-mono text-zinc-400 transition hover:bg-white/5 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-300"
           >
             ×
           </button>
         </header>
+        {!isMinimized && <><div className="portfolio-terminal-session">
+          <p className="font-mono text-[10px] text-zinc-500">Welcome to Bala&apos;s portfolio terminal.</p>
+          <p className="mt-1 font-mono text-[10px] text-zinc-600">Type a question or choose a command below.</p>
+        </div>
         <div className="portfolio-chat-messages" aria-live="polite">
           {messages.length === 0 ? (
             <div className="space-y-4">
-              <p className="text-sm leading-6 text-zinc-300">
-                Hi, I can help you explore Bala&apos;s work, experience, and technical toolkit.
-              </p>
               <div className="flex flex-col items-start gap-2">
                 {quickPrompts.map((prompt) => (
                   <button
                     key={prompt}
                     type="button"
-                    onClick={() => void sendMessage(prompt)}
+                    onClick={() => {
+                      setShowChatHint(false)
+                      void sendMessage(prompt)
+                    }}
                     disabled={isSending}
-                    className="rounded border border-teal-300/20 px-3 py-2 text-left font-mono text-[10px] leading-4 text-teal-100 transition hover:border-teal-200/50 hover:bg-teal-300/[0.07] focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-300"
+                    className="portfolio-terminal-command"
                   >
                     {prompt}
                   </button>
@@ -279,37 +362,45 @@ export function PortfolioChat() {
             </div>
           )}
         </div>
-        <form onSubmit={handleSubmit} className="flex gap-2 border-t border-teal-300/15 p-3">
+        <form onSubmit={handleSubmit} className="portfolio-terminal-inputbar">
           <label className="sr-only" htmlFor="portfolio-chat-input">
             Ask Bala's portfolio assistant
           </label>
+          <span aria-hidden="true" className="font-mono text-sm text-emerald-300">&gt;_</span>
           <input
             id="portfolio-chat-input"
             value={input}
             onChange={(event) => setInput(event.target.value)}
             maxLength={1000}
             disabled={isSending}
-            placeholder="Type a question..."
-            className="min-w-0 flex-1 rounded border border-white/10 bg-[#080f14] px-3 py-2 font-mono text-xs text-zinc-100 placeholder:text-zinc-600 focus:border-teal-300/50 focus:outline-none"
+            placeholder={isSending ? 'processing...' : 'ask about Bala'}
+            className="min-w-0 flex-1 bg-transparent py-2 font-mono text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none"
           />
           <button
             type="submit"
             aria-label="Send message"
             disabled={!input.trim() || isSending}
-            className="rounded border border-teal-300/25 px-3 font-mono text-xs text-teal-100 transition hover:bg-teal-300/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-300 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded px-2 py-1 font-mono text-xs text-emerald-200 transition hover:bg-emerald-300/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-300 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            ↗
+            ↵
           </button>
-        </form>
-      </section>
+        </form></>}
+      </motion.section>
       <button
         type="button"
         aria-label={isOpen ? 'Close portfolio chat' : 'Open portfolio chat'}
         aria-expanded={isOpen}
-        onClick={() => setIsOpen((open) => !open)}
+        onClick={() => {
+          if (isOpen) {
+            setIsMaximized(false)
+            setIsMinimized(false)
+          }
+          setIsOpen(!isOpen)
+          setShowChatHint(false)
+        }}
         className="portfolio-chat-trigger"
       >
-        <span aria-hidden="true">{isOpen ? '×' : '>_'}</span>
+        {isOpen ? <span aria-hidden="true">×</span> : <img src="/chatbot-logo.png" alt="" className="h-full w-full rounded-full object-cover" />}
       </button>
     </div>
   )

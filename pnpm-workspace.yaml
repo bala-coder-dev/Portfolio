@@ -3,3 +3,6 @@ pmOnFail: ignore
 minimumReleaseAgeExclude:
   - '@next/*'
   - next
+  - framer-motion@14.0.0
+  - motion-dom@14.0.0
+  - motion-utils@14.0.0

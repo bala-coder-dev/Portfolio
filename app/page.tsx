@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { DotMatrixCanvas, MagneticTargets, PortfolioChat } from '@/components/portfolio-effects'
+import { MagneticTargets, NeuralNetworkCanvas, PortfolioChat } from '@/components/portfolio-effects'
 import { ContactSection } from '@/components/contact-section'
 import { DesktopWindow, MatrixText, TerminalMode } from '@/components/advanced-visuals'
 import { PortfolioIntro } from '@/components/portfolio-intro'
@@ -32,7 +32,7 @@ export default function Home() {
   const visibleProjects = activeFilter === 'ALL' ? projects : projects.filter((p) => activeFilter === 'AI / ML' ? ['SME Nexus AI', 'TruthLens', 'CivicPulse'].includes(p.name) : p.name === 'PR Review Copilot')
   return <main className="relative isolate min-h-screen overflow-hidden bg-[#090a0f] text-zinc-100 selection:bg-violet-500/30">
     <PortfolioIntro onExitStart={handleIntroExitStart} />
-    <DotMatrixCanvas />
+    <NeuralNetworkCanvas />
     <MagneticTargets />
     <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_75%_5%,rgba(124,58,237,0.13),transparent_31%),radial-gradient(circle_at_15%_45%,rgba(6,182,212,0.06),transparent_27%)]" />
     <motion.div

@@ -35,7 +35,7 @@ nav a { text-transform: uppercase; }
 @media (max-width: 640px) { .timeline { grid-template-columns: 1fr; gap: 8px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
 
-.dot-matrix-canvas { position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%; pointer-events: none; }
+.neural-network-canvas { position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%; pointer-events: none; }
 main::before { position: fixed; inset: 0; z-index: 0; background-image: linear-gradient(rgba(77,170,160,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(77,170,160,.025) 1px, transparent 1px); background-size: 64px 64px; content: ""; mask-image: radial-gradient(ellipse at 50% 28%, #000 5%, transparent 82%); pointer-events: none; }
 main > div.pointer-events-none.fixed { background-image: radial-gradient(ellipse at 78% 4%, rgba(20,184,166,.11), transparent 34%), radial-gradient(ellipse at 8% 48%, rgba(29,78,98,.10), transparent 31%), radial-gradient(ellipse at 52% 100%, rgba(14,116,110,.07), transparent 38%); }
 main > div.relative.mx-auto { position: relative; z-index: 2; }
@@ -226,7 +226,8 @@ html.portfolio-intro-open { overflow: hidden; }
 .portfolio-intro__topline { gap: 16px; }
 .portfolio-intro__edition { color: #929ca3; }
 .portfolio-intro__edition i:last-of-type { width: 3px; height: 3px; border-radius: 50%; background: #a78bfa; box-shadow: 0 0 10px rgba(167,139,250,.65); }
-.portfolio-intro__content { min-height: 0; }
+.portfolio-intro__rain { position: absolute; z-index: 0; inset: 0; width: 100%; height: 100%; opacity: .58; pointer-events: none; mask-image: linear-gradient(180deg, transparent, #000 11%, #000 84%, transparent); }
+.portfolio-intro__content { position: relative; z-index: 1; min-height: 0; }
 .portfolio-intro__stage { width: min(1020px, 100%); height: clamp(340px, 54vh, 490px); perspective: 1000px; }
 .portfolio-intro__floor { position: absolute; right: -8%; bottom: -22%; left: -8%; height: 68%; transform: rotateX(69deg) translateZ(-85px); transform-origin: center top; background-image: linear-gradient(rgba(90,215,202,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(90,215,202,.12) 1px, transparent 1px); background-size: 42px 42px; mask-image: linear-gradient(transparent 1%, #000 38%, transparent 94%); opacity: .55; animation: portfolio-floor-drift 12s linear infinite; }
 .portfolio-intro__orbit--outer { width: 76%; height: 76%; border-color: rgba(102,229,209,.16); transform: translate(-50%, -50%) rotateX(72deg) rotateZ(-8deg); }
@@ -320,5 +321,5 @@ html.portfolio-intro-open { overflow: hidden; }
 }
 @media (prefers-reduced-motion: reduce) {
   .portfolio-intro { display: none; animation: none; }
-  .portfolio-intro__skill, .portfolio-intro__caption, .portfolio-intro__monogram, .portfolio-intro__progress span, .portfolio-intro__loading i, .portfolio-intro__monogram-glint, .portfolio-intro__cube, .portfolio-intro__floor, .portfolio-intro__connection::after, .portfolio-intro__skill-icon--ai i { animation: none; }
+  .portfolio-intro__rain, .portfolio-intro__skill, .portfolio-intro__caption, .portfolio-intro__monogram, .portfolio-intro__progress span, .portfolio-intro__loading i, .portfolio-intro__monogram-glint, .portfolio-intro__cube, .portfolio-intro__floor, .portfolio-intro__skill-live i, .portfolio-intro__skill-live span, .portfolio-intro__skill-icon--ai i { animation: none; }
 }

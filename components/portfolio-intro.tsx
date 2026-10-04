@@ -1,7 +1,11 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+
+const matrixGlyphs = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz<>/{}[]#$%&'
+const matrixFontSize = 14
+const matrixColumnWidth = 18
 
 const statusMessages = [
   ['RUNNING', 'INFRASTRUCTURE: ONLINE', 'DEPLOY READY'],
@@ -11,6 +15,7 @@ const statusMessages = [
 ]
 
 export function PortfolioIntro({ onExitStart }: { onExitStart: () => void }) {
+  const rainCanvasRef = useRef<HTMLCanvasElement>(null)
   const [isVisible, setIsVisible] = useState(true)
   const [isExiting, setIsExiting] = useState(false)
   const [statusIndex, setStatusIndex] = useState(0)
@@ -60,6 +65,102 @@ export function PortfolioIntro({ onExitStart }: { onExitStart: () => void }) {
     return () => window.clearInterval(statusInterval)
   }, [])
 
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    const canvas = rainCanvasRef.current
+    const context = canvas?.getContext('2d')
+    if (!canvas || !context) return
+
+    type RainColumn = {
+      x: number
+      y: number
+      speed: number
+      trailLength: number
+      glyphs: string[]
+    }
+
+    let width = 0
+    let height = 0
+    let pixelRatio = 1
+    let frame = 0
+    let lastFrameTime = 0
+    let columns: RainColumn[] = []
+
+    const randomGlyph = () => matrixGlyphs[Math.floor(Math.random() * matrixGlyphs.length)]
+    const makeColumn = (x: number): RainColumn => {
+      const trailLength = 9 + Math.floor(Math.random() * 15)
+      return {
+        x,
+        y: -Math.random() * height,
+        speed: 150 + Math.random() * 300,
+        trailLength,
+        glyphs: Array.from({ length: trailLength }, randomGlyph),
+      }
+    }
+
+    const resize = () => {
+      pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5)
+      width = canvas.clientWidth
+      height = canvas.clientHeight
+      canvas.width = Math.round(width * pixelRatio)
+      canvas.height = Math.round(height * pixelRatio)
+      context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
+      columns = Array.from(
+        { length: Math.ceil(width / matrixColumnWidth) },
+        (_, index) => makeColumn(index * matrixColumnWidth),
+      )
+    }
+
+    const draw = (timestamp: number) => {
+      if (timestamp - lastFrameTime < 33) {
+        frame = window.requestAnimationFrame(draw)
+        return
+      }
+
+      const elapsed = lastFrameTime ? Math.min((timestamp - lastFrameTime) / 1000, 0.05) : 0
+      lastFrameTime = timestamp
+      context.clearRect(0, 0, width, height)
+      context.font = `${matrixFontSize}px ui-monospace, SFMono-Regular, Menlo, monospace`
+      context.textAlign = 'center'
+      context.textBaseline = 'top'
+
+      for (const column of columns) {
+        column.y += column.speed * elapsed
+        if (Math.random() < 0.08) {
+          const glyphIndex = Math.floor(Math.random() * column.glyphs.length)
+          column.glyphs[glyphIndex] = randomGlyph()
+        }
+
+        for (let index = 0; index < column.trailLength; index += 1) {
+          const glyphY = column.y - index * matrixFontSize
+          if (glyphY < -matrixFontSize || glyphY > height) continue
+
+          const alpha = (1 - index / column.trailLength) * 0.5
+          context.fillStyle = index === 0
+            ? `rgba(174, 255, 240, ${alpha})`
+            : `rgba(45, 225, 195, ${alpha})`
+          context.fillText(column.glyphs[index], column.x, glyphY)
+        }
+
+        if (column.y - column.trailLength * matrixFontSize > height) {
+          Object.assign(column, makeColumn(column.x))
+        }
+      }
+
+      frame = window.requestAnimationFrame(draw)
+    }
+
+    resize()
+    frame = window.requestAnimationFrame(draw)
+    window.addEventListener('resize', resize)
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.removeEventListener('resize', resize)
+    }
+  }, [])
+
   if (!isVisible) return null
 
   return (
@@ -84,6 +185,7 @@ export function PortfolioIntro({ onExitStart }: { onExitStart: () => void }) {
       style={{ transformPerspective: 1200, transformOrigin: '50% 50%', transformStyle: 'preserve-3d' }}
     >
       <div className="portfolio-intro__glow" aria-hidden="true" />
+      <canvas ref={rainCanvasRef} className="portfolio-intro__rain" aria-hidden="true" />
       <div className="portfolio-intro__topline">
         <span className="portfolio-intro__wordmark">BALA<span>.DEV</span></span>
         <span className="portfolio-intro__edition">ENGINEERING <i /> SYSTEMS <i /> AI</span>

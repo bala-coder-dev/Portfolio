@@ -33,7 +33,7 @@ async function fetchChatWithNetworkRetry(url: string, init: RequestInit) {
   throw new Error('The assistant could not answer right now. Please try again.')
 }
 
-export function DotMatrixCanvas() {
+export function NeuralNetworkCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -41,103 +41,214 @@ export function DotMatrixCanvas() {
     const context = canvas?.getContext('2d')
     if (!canvas || !context) return
 
+    type Particle = {
+      x: number
+      y: number
+      vx: number
+      vy: number
+      radius: number
+    }
+
+    const connectionDistance = 126
+    const pointerDistance = 190
+    const maxParticles = 140
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
     let width = 0
     let height = 0
     let pixelRatio = 1
     let frame = 0
-    let pointerX = -1000
-    let pointerY = -1000
-    let targetX = -1000
-    let targetY = -1000
-    let strength = 0
-    let targetStrength = 0
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    let lastFrameTime = 0
+    let pointerX = 0
+    let pointerY = 0
+    let targetPointerX = 0
+    let targetPointerY = 0
+    let pointerStrength = 0
+    let targetPointerStrength = 0
+    let isPointerActive = false
+    let particles: Particle[] = []
+
+    const createParticles = () => {
+      const count = Math.min(maxParticles, Math.max(32, Math.round((width * height) / 15000)))
+      particles = Array.from({ length: count }, () => {
+        const angle = Math.random() * Math.PI * 2
+        const speed = 5 + Math.random() * 13
+
+        return {
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          radius: 1 + Math.random() * 0.65,
+        }
+      })
+    }
+
+    const draw = () => {
+      context.clearRect(0, 0, width, height)
+      const cellSize = connectionDistance
+      const particleCells = new Map<string, number[]>()
+
+      for (let index = 0; index < particles.length; index += 1) {
+        const particle = particles[index]
+        const cellX = Math.floor(particle.x / cellSize)
+        const cellY = Math.floor(particle.y / cellSize)
+        const key = `${cellX},${cellY}`
+        const cell = particleCells.get(key)
+        if (cell) cell.push(index)
+        else particleCells.set(key, [index])
+      }
+
+      for (let index = 0; index < particles.length; index += 1) {
+        const particle = particles[index]
+        const cellX = Math.floor(particle.x / cellSize)
+        const cellY = Math.floor(particle.y / cellSize)
+
+        for (let offsetY = -1; offsetY <= 1; offsetY += 1) {
+          for (let offsetX = -1; offsetX <= 1; offsetX += 1) {
+            const neighbors = particleCells.get(`${cellX + offsetX},${cellY + offsetY}`)
+            if (!neighbors) continue
+
+            for (const neighborIndex of neighbors) {
+              if (neighborIndex <= index) continue
+              const neighbor = particles[neighborIndex]
+              const dx = neighbor.x - particle.x
+              const dy = neighbor.y - particle.y
+              const distance = Math.hypot(dx, dy)
+              if (distance >= connectionDistance) continue
+
+              context.beginPath()
+              context.moveTo(particle.x, particle.y)
+              context.lineTo(neighbor.x, neighbor.y)
+              context.strokeStyle = `rgba(37, 137, 128, ${(1 - distance / connectionDistance) * 0.13})`
+              context.lineWidth = 0.7
+              context.stroke()
+            }
+          }
+        }
+
+        if (isPointerActive && pointerStrength > 0.01) {
+          const dx = pointerX - particle.x
+          const dy = pointerY - particle.y
+          const distance = Math.hypot(dx, dy)
+
+          if (distance < pointerDistance) {
+            context.beginPath()
+            context.moveTo(particle.x, particle.y)
+            context.lineTo(pointerX, pointerY)
+            context.strokeStyle = `rgba(53, 205, 184, ${(1 - distance / pointerDistance) * 0.24 * pointerStrength})`
+            context.lineWidth = 0.85
+            context.stroke()
+          }
+        }
+
+        context.beginPath()
+        context.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2)
+        context.fillStyle = 'rgba(47, 132, 125, 0.38)'
+        context.fill()
+      }
+    }
+
+    const animate = (timestamp: number) => {
+      const elapsed = lastFrameTime ? Math.min((timestamp - lastFrameTime) / 1000, 0.05) : 0
+      lastFrameTime = timestamp
+
+      if (!motionPreference.matches) {
+        for (const particle of particles) {
+          particle.x += particle.vx * elapsed
+          particle.y += particle.vy * elapsed
+
+          if (particle.x < 0 || particle.x > width) particle.vx *= -1
+          if (particle.y < 0 || particle.y > height) particle.vy *= -1
+          particle.x = Math.max(0, Math.min(width, particle.x))
+          particle.y = Math.max(0, Math.min(height, particle.y))
+        }
+
+        pointerX += (targetPointerX - pointerX) * 0.18
+        pointerY += (targetPointerY - pointerY) * 0.18
+        pointerStrength += (targetPointerStrength - pointerStrength) * 0.12
+      }
+
+      draw()
+      frame = motionPreference.matches || document.hidden ? 0 : window.requestAnimationFrame(animate)
+    }
+
+    const requestFrame = () => {
+      if (!frame) frame = window.requestAnimationFrame(animate)
+    }
+
+    const onPointerMove = (event: PointerEvent) => {
+      if (event.pointerType === 'touch') return
+      targetPointerX = event.clientX
+      targetPointerY = event.clientY
+      isPointerActive = true
+      targetPointerStrength = 1
+      if (motionPreference.matches) {
+        pointerX = targetPointerX
+        pointerY = targetPointerY
+        pointerStrength = 1
+      }
+      requestFrame()
+    }
+
+    const onPointerLeave = () => {
+      isPointerActive = false
+      targetPointerStrength = 0
+      requestFrame()
+    }
 
     const resize = () => {
-      pixelRatio = Math.min(window.devicePixelRatio || 1, 2)
+      pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5)
       width = window.innerWidth
       height = window.innerHeight
       canvas.width = Math.round(width * pixelRatio)
       canvas.height = Math.round(height * pixelRatio)
       context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
+      createParticles()
       draw()
     }
 
-    const draw = () => {
-      context.clearRect(0, 0, width, height)
-      const spacing = 28
-
-      for (let y = spacing / 2; y < height; y += spacing) {
-        for (let x = spacing / 2; x < width; x += spacing) {
-          const dx = x - pointerX
-          const dy = y - pointerY
-          const distance = Math.sqrt(dx * dx + dy * dy)
-          const influence = Math.max(0, 1 - distance / 150) ** 2 * strength
-          const offset = influence * 7
-          const shiftX = distance ? (dx / distance) * offset : 0
-          const shiftY = distance ? (dy / distance) * offset : 0
-          const radius = 0.9 + influence * 0.55
-
-          context.fillStyle = `rgba(83, 190, 176, ${0.2 + influence * 0.28})`
-          context.beginPath()
-          context.arc(x + shiftX, y + shiftY, radius, 0, Math.PI * 2)
-          context.fill()
-        }
-      }
-    }
-
-    const animate = () => {
-      pointerX += (targetX - pointerX) * 0.16
-      pointerY += (targetY - pointerY) * 0.16
-      strength += (targetStrength - strength) * 0.12
-      draw()
-
-      if (
-        Math.abs(targetX - pointerX) > 0.5 ||
-        Math.abs(targetY - pointerY) > 0.5 ||
-        Math.abs(targetStrength - strength) > 0.01
-      ) {
-        frame = window.requestAnimationFrame(animate)
-      } else {
-        pointerX = targetX
-        pointerY = targetY
-        strength = targetStrength
+    const onMotionPreferenceChange = () => {
+      window.cancelAnimationFrame(frame)
+      frame = 0
+      lastFrameTime = 0
+      if (motionPreference.matches) {
+        pointerStrength = 0
+        targetPointerStrength = 0
         draw()
-        frame = 0
+      } else {
+        requestFrame()
       }
     }
 
-    const requestDraw = () => {
-      if (!frame) frame = window.requestAnimationFrame(animate)
-    }
-
-    const onPointerMove = (event: PointerEvent) => {
-      if (prefersReducedMotion || event.pointerType === 'touch') return
-      targetX = event.clientX
-      targetY = event.clientY
-      targetStrength = 1
-      requestDraw()
-    }
-
-    const onPointerLeave = () => {
-      targetStrength = 0
-      requestDraw()
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        window.cancelAnimationFrame(frame)
+        frame = 0
+      } else {
+        lastFrameTime = 0
+        requestFrame()
+      }
     }
 
     resize()
+    if (!motionPreference.matches) requestFrame()
     window.addEventListener('resize', resize)
     window.addEventListener('pointermove', onPointerMove, { passive: true })
     window.addEventListener('pointerleave', onPointerLeave)
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    motionPreference.addEventListener('change', onMotionPreferenceChange)
 
     return () => {
       window.cancelAnimationFrame(frame)
       window.removeEventListener('resize', resize)
       window.removeEventListener('pointermove', onPointerMove)
       window.removeEventListener('pointerleave', onPointerLeave)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      motionPreference.removeEventListener('change', onMotionPreferenceChange)
     }
   }, [])
 
-  return <canvas ref={canvasRef} aria-hidden="true" className="dot-matrix-canvas" />
+  return <canvas ref={canvasRef} aria-hidden="true" className="neural-network-canvas" />
 }
 
 export function MagneticTargets() {

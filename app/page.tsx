@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { MagneticTargets, PortfolioChat } from '@/components/portfolio-effects'
+import { useCallback, useEffect, useState } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
+import { DotMatrixCanvas, MagneticTargets, PortfolioChat } from '@/components/portfolio-effects'
 import { ContactSection } from '@/components/contact-section'
 import { DesktopWindow, MatrixText, TerminalMode } from '@/components/advanced-visuals'
 import { PortfolioIntro } from '@/components/portfolio-intro'
@@ -21,15 +22,27 @@ export default function Home() {
   const [typed, setTyped] = useState('')
   const [activeFilter, setActiveFilter] = useState('ALL')
   const [isTerminalOpen, setIsTerminalOpen] = useState(false)
+  const [isIntroExiting, setIsIntroExiting] = useState(false)
+  const prefersReducedMotion = useReducedMotion()
+  const handleIntroExitStart = useCallback(() => setIsIntroExiting(true), [])
   const terminal = '> building scalable, production-grade software\n> full-stack engineering × AI systems\n> status: open_to_opportunities = true'
   useEffect(() => { let i = 0; const id = setInterval(() => { setTyped(terminal.slice(0, i)); i += 1; if (i > terminal.length) clearInterval(id) }, 24); return () => clearInterval(id) }, [])
   useEffect(() => { window.history.replaceState(null, '', '#home'); window.scrollTo({ top: 0, behavior: 'instant' }) }, [])
   const filters = ['ALL', 'AI / ML', 'FULL STACK']
   const visibleProjects = activeFilter === 'ALL' ? projects : projects.filter((p) => activeFilter === 'AI / ML' ? ['SME Nexus AI', 'TruthLens', 'CivicPulse'].includes(p.name) : p.name === 'PR Review Copilot')
   return <main className="relative isolate min-h-screen overflow-hidden bg-[#090a0f] text-zinc-100 selection:bg-violet-500/30">
-    <PortfolioIntro />
+    <PortfolioIntro onExitStart={handleIntroExitStart} />
+    <DotMatrixCanvas />
     <MagneticTargets />
     <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_75%_5%,rgba(124,58,237,0.13),transparent_31%),radial-gradient(circle_at_15%_45%,rgba(6,182,212,0.06),transparent_27%)]" />
+    <motion.div
+      className="portfolio-main-content"
+      initial={{ opacity: 0, y: 50 }}
+      animate={isIntroExiting ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+      transition={{ duration: prefersReducedMotion ? 0 : 0.9, delay: isIntroExiting && !prefersReducedMotion ? 0.08 : 0, ease: [0.22, 1, 0.36, 1] }}
+      aria-hidden={!isIntroExiting}
+      inert={!isIntroExiting}
+    >
     <nav className="sticky top-0 z-20 border-b border-white/[0.06] bg-[#090a0f]/90 backdrop-blur-xl"><div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-5 lg:px-8"><a href="#home" aria-label="Bala.dev home" className="brand-lockup flex items-center gap-2.5 font-serif text-2xl font-bold tracking-tight text-white"><img src="/bala-dev-mark.png" alt="" className="brand-mark h-14 w-14 object-contain" /><span>Bala<span className="text-cyan-300">.dev</span></span></a><div className="hidden items-center gap-5 font-serif text-[10px] font-bold tracking-[0.16em] text-zinc-400 lg:flex">{['HOME','ABOUT','SKILLS','PROJECTS','EXPERIENCE','ACHIEVEMENTS','EDUCATION','CONTACT'].map((x) => <a key={x} href={`#${x.toLowerCase()}`} className="transition-colors hover:text-violet-300">{x}</a>)}</div><div className="flex items-center gap-3"><button type="button" onClick={() => setIsTerminalOpen(true)} className="rounded-md border border-teal-300/25 px-3 py-2 font-mono text-[9px] text-teal-200 transition hover:border-teal-200/60 hover:bg-teal-300/[0.07] sm:text-[10px]">[ TERMINAL MODE ]</button><a href="mailto:balamurugan008jk@gmail.com" className="rounded-md border border-violet-400/30 px-3 py-2 font-mono text-[10px] text-violet-300 transition hover:bg-violet-400/10">CONTACT ↗</a></div></div></nav>
     <div className="relative mx-auto max-w-6xl px-5 lg:px-8">
       <section id="home" className="grid min-h-[640px] items-center gap-12 py-16 lg:items-start lg:grid-cols-[1.1fr_0.9fr] lg:py-20">
@@ -84,7 +97,8 @@ export default function Home() {
       <section id="experience" className="border-t border-white/[0.07] py-20"><p className="label">06 / INDUSTRY</p><h2 className="section-title mb-10">Experience</h2><div className="space-y-5"><article className="rounded-xl border border-white/[0.09] bg-[#101117]/90 p-6 shadow-xl shadow-black/10 sm:p-8"><div className="flex flex-wrap items-start justify-between gap-4"><div><h3 className="font-serif text-2xl font-semibold text-white">Full Stack Development Intern</h3><p className="mt-2 font-mono text-xs text-cyan-300">InfoGerm · Chennai</p></div><span className="rounded-full bg-gradient-to-r from-violet-500 to-cyan-500 px-4 py-2 font-mono text-[10px] text-white">JUN 2025 — AUG 2025</span></div><ul className="mt-6 space-y-3 text-sm leading-7 text-zinc-400"><li>• Developed responsive full-stack web applications using the MERN stack, focusing on scalable and maintainable application architecture.</li><li>• Designed and integrated RESTful APIs for seamless communication between frontend interfaces and backend services.</li><li>• Managed source code with Git and GitHub while following collaborative development best practices.</li><li>• Deployed full-stack applications and gained practical exposure to debugging, testing, and deployment workflows.</li></ul></article><article className="rounded-xl border border-white/[0.09] bg-[#101117]/90 p-6 shadow-xl shadow-black/10 sm:p-8"><div className="flex flex-wrap items-start justify-between gap-4"><div><h3 className="font-serif text-2xl font-semibold text-white">Software Engineering Virtual Experience</h3><p className="mt-2 font-mono text-xs text-cyan-300">JPMorgan Chase &amp; Co. · via Forage</p></div><span className="rounded-full bg-gradient-to-r from-violet-500 to-cyan-500 px-4 py-2 font-mono text-[10px] text-white">DECEMBER 2025</span></div><ul className="mt-6 space-y-3 text-sm leading-7 text-zinc-400"><li>• Completed a software engineering simulation focused on solving real-world development challenges through debugging, software design, and problem-solving.</li><li>• Gained practical exposure to software engineering workflows, clean coding practices, and industry-standard development methodologies.</li></ul></article></div></section><section id="achievements" className="border-t border-white/[0.07] py-20"><p className="label">07 / RECOGNITION</p><h2 className="section-title mb-10">Achievements</h2><div className="grid gap-5 lg:grid-cols-3"><article className="bento"><p className="mb-4 text-3xl">01</p><h3 className="font-serif text-2xl font-semibold text-white">Finalist — Agentic Arena 2026</h3><p className="mt-4 text-sm leading-7 text-zinc-400">Recognized among 880+ participants for SME Nexus AI, an autonomous executive boardroom where specialized agents debate and produce strategic decisions.</p></article><article className="bento"><p className="mb-4 text-3xl">02</p><h3 className="font-serif text-2xl font-semibold text-white">Second Prize — Quantathon 2026</h3><p className="mt-4 text-sm leading-7 text-zinc-400">Department of Information Technology, SRMIST. Team Code Dominion won ₹25,000 and secured hardware development funding for the Thermal Noise Visual Analyzer.</p></article><article className="bento"><p className="mb-4 text-3xl">03</p><h3 className="font-serif text-2xl font-semibold text-white">Mind &amp; Machine: The AI Quiz</h3><p className="mt-4 text-sm leading-7 text-zinc-400">Completed the certification contest by Outstanding Koders with AI4Tomorrow, scoring 58.5/60 (97.5%) across AI and machine learning fundamentals.</p></article></div></section>
       <ContactSection />
     </div>
-    <PortfolioChat />
+      </motion.div>
+      <PortfolioChat />
     <TerminalMode
       isOpen={isTerminalOpen}
       onClose={() => setIsTerminalOpen(false)}

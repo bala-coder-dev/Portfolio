@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { DotMatrixCanvas, MagneticTargets, PortfolioChat } from '@/components/portfolio-effects'
+import { MagneticTargets, PortfolioChat } from '@/components/portfolio-effects'
 import { ContactSection } from '@/components/contact-section'
 import { DesktopWindow, MatrixText, TerminalMode } from '@/components/advanced-visuals'
+import { PortfolioIntro } from '@/components/portfolio-intro'
 
 const projects = [
   { name: 'SME Nexus AI', type: 'AI PLATFORM', desc: 'Autonomous multi-agent boardroom where seven executive agents debate, vote, and turn business data into decisive action plans.', stack: ['React', 'TypeScript', 'Node.js', 'Gemini', 'Pinecone'], color: 'violet', href: 'https://github.com/bala-coder-dev/SME-Nexus-AI' },
@@ -26,7 +27,7 @@ export default function Home() {
   const filters = ['ALL', 'AI / ML', 'FULL STACK']
   const visibleProjects = activeFilter === 'ALL' ? projects : projects.filter((p) => activeFilter === 'AI / ML' ? ['SME Nexus AI', 'TruthLens', 'CivicPulse'].includes(p.name) : p.name === 'PR Review Copilot')
   return <main className="relative isolate min-h-screen overflow-hidden bg-[#090a0f] text-zinc-100 selection:bg-violet-500/30">
-    <DotMatrixCanvas />
+    <PortfolioIntro />
     <MagneticTargets />
     <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_75%_5%,rgba(124,58,237,0.13),transparent_31%),radial-gradient(circle_at_15%_45%,rgba(6,182,212,0.06),transparent_27%)]" />
     <nav className="sticky top-0 z-20 border-b border-white/[0.06] bg-[#090a0f]/90 backdrop-blur-xl"><div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-5 lg:px-8"><a href="#home" aria-label="Bala.dev home" className="brand-lockup flex items-center gap-2.5 font-serif text-2xl font-bold tracking-tight text-white"><img src="/bala-dev-mark.png" alt="" className="brand-mark h-14 w-14 object-contain" /><span>Bala<span className="text-cyan-300">.dev</span></span></a><div className="hidden items-center gap-5 font-serif text-[10px] font-bold tracking-[0.16em] text-zinc-400 lg:flex">{['HOME','ABOUT','SKILLS','PROJECTS','EXPERIENCE','ACHIEVEMENTS','EDUCATION','CONTACT'].map((x) => <a key={x} href={`#${x.toLowerCase()}`} className="transition-colors hover:text-violet-300">{x}</a>)}</div><div className="flex items-center gap-3"><button type="button" onClick={() => setIsTerminalOpen(true)} className="rounded-md border border-teal-300/25 px-3 py-2 font-mono text-[9px] text-teal-200 transition hover:border-teal-200/60 hover:bg-teal-300/[0.07] sm:text-[10px]">[ TERMINAL MODE ]</button><a href="mailto:balamurugan008jk@gmail.com" className="rounded-md border border-violet-400/30 px-3 py-2 font-mono text-[10px] text-violet-300 transition hover:bg-violet-400/10">CONTACT ↗</a></div></div></nav>

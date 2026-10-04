@@ -1,11 +1,14 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { MagneticTargets, NeuralNetworkCanvas, PortfolioChat } from '@/components/portfolio-effects'
 import { ContactSection } from '@/components/contact-section'
 import { DesktopWindow, MatrixText, TerminalMode } from '@/components/advanced-visuals'
 import { PortfolioIntro } from '@/components/portfolio-intro'
+
+const scrambleCharacters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+const scrambleDuration = 360
 
 const projects = [
   { name: 'SME Nexus AI', type: 'AI PLATFORM', desc: 'Autonomous multi-agent boardroom where seven executive agents debate, vote, and turn business data into decisive action plans.', stack: ['React', 'TypeScript', 'Node.js', 'Gemini', 'Pinecone'], color: 'violet', href: 'https://github.com/bala-coder-dev/SME-Nexus-AI' },
@@ -18,12 +21,47 @@ const skillGroups = [['LANGUAGES', 'Python', 'JavaScript', 'TypeScript', 'SQL', 
 
 function WindowBar({ label }: { label: string }) { return <div className="flex items-center gap-2 border-b border-white/[0.07] px-4 py-3"><span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" /><span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" /><span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" /><span className="ml-2 font-mono text-[10px] tracking-[0.16em] text-zinc-500">{label}</span></div> }
 
+function useTextScramble(text: string, prefersReducedMotion: boolean) {
+  const [scrambledText, setScrambledText] = useState(text)
+  const [isScrambling, setIsScrambling] = useState(false)
+  const frameRef = useRef<number | null>(null)
+
+  const startScramble = useCallback(() => {
+    if (prefersReducedMotion) return
+    if (frameRef.current !== null) window.cancelAnimationFrame(frameRef.current)
+
+    const startedAt = performance.now()
+    const animate = (now: number) => {
+      const progress = Math.min((now - startedAt) / scrambleDuration, 1)
+      const settledCharacters = Math.floor(progress * text.length)
+      const nextText = Array.from(text, (character, index) => {
+        if (/\s/.test(character) || index < settledCharacters || progress === 1) return character
+        return scrambleCharacters[Math.floor(Math.random() * scrambleCharacters.length)]
+      }).join('')
+
+      setScrambledText(nextText)
+      setIsScrambling(progress < 1)
+      frameRef.current = progress < 1 ? window.requestAnimationFrame(animate) : null
+    }
+
+    setIsScrambling(true)
+    frameRef.current = window.requestAnimationFrame(animate)
+  }, [prefersReducedMotion, text])
+
+  useEffect(() => () => {
+    if (frameRef.current !== null) window.cancelAnimationFrame(frameRef.current)
+  }, [])
+
+  return { scrambledText, isScrambling, startScramble }
+}
+
 export default function Home() {
   const [typed, setTyped] = useState('')
   const [activeFilter, setActiveFilter] = useState('ALL')
   const [isTerminalOpen, setIsTerminalOpen] = useState(false)
   const [isIntroExiting, setIsIntroExiting] = useState(false)
   const prefersReducedMotion = useReducedMotion()
+  const nameScramble = useTextScramble('Balamurugan K', prefersReducedMotion ?? false)
   const handleIntroExitStart = useCallback(() => setIsIntroExiting(true), [])
   const terminal = '> building scalable, production-grade software\n> full-stack engineering × AI systems\n> status: open_to_opportunities = true'
   useEffect(() => { let i = 0; const id = setInterval(() => { setTyped(terminal.slice(0, i)); i += 1; if (i > terminal.length) clearInterval(id) }, 24); return () => clearInterval(id) }, [])
@@ -50,8 +88,17 @@ export default function Home() {
           <p className="mb-5 font-mono text-xs tracking-[0.28em] text-cyan-400">
             <MatrixText text="01 / ASPIRING SOFTWARE ENGINEER" />
           </p>
-          <h1 className="whitespace-nowrap font-serif text-[clamp(2.5rem,5.5vw,4.6rem)] font-semibold leading-[0.98] tracking-[-0.055em] text-white">
-            Balamurugan K
+          <h1
+            className="relative whitespace-nowrap font-serif text-[clamp(2.5rem,5.5vw,4.6rem)] font-semibold leading-[0.98] tracking-[-0.055em] text-white"
+            onPointerEnter={nameScramble.startScramble}
+            aria-label="Balamurugan K"
+          >
+            <span className={nameScramble.isScrambling ? 'invisible' : ''}>Balamurugan K</span>
+            {nameScramble.isScrambling && (
+              <span aria-hidden="true" className="pointer-events-none absolute inset-0 whitespace-nowrap">
+                {nameScramble.scrambledText}
+              </span>
+            )}
           </h1>
           <p className="mt-4 flex flex-wrap items-center gap-x-2.5 gap-y-1 font-serif text-sm tracking-wide text-zinc-300 sm:text-base">
             <span>Backend Developer</span><span className="text-teal-300/70" aria-hidden="true">·</span>

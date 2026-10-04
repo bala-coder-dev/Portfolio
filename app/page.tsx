@@ -81,15 +81,15 @@ export default function Home() {
       aria-hidden={!isIntroExiting}
       inert={!isIntroExiting}
     >
-    <nav className="sticky top-0 z-20 border-b border-white/[0.06] bg-[#090a0f]/90 backdrop-blur-xl"><div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-5 lg:px-8"><a href="#home" aria-label="Bala.dev home" className="brand-lockup flex items-center gap-2.5 font-serif text-2xl font-bold tracking-tight text-white"><img src="/bala-dev-mark.png" alt="" className="brand-mark h-14 w-14 object-contain" /><span>Bala<span className="text-cyan-300">.dev</span></span></a><div className="hidden items-center gap-5 font-serif text-[10px] font-bold tracking-[0.16em] text-zinc-400 lg:flex">{['HOME','ABOUT','SKILLS','PROJECTS','EXPERIENCE','ACHIEVEMENTS','EDUCATION','CONTACT'].map((x) => <a key={x} href={`#${x.toLowerCase()}`} className="transition-colors hover:text-violet-300">{x}</a>)}</div><div className="flex items-center gap-3"><button type="button" onClick={() => setIsTerminalOpen(true)} className="rounded-md border border-teal-300/25 px-3 py-2 font-mono text-[9px] text-teal-200 transition hover:border-teal-200/60 hover:bg-teal-300/[0.07] sm:text-[10px]">[ TERMINAL MODE ]</button><a href="mailto:balamurugan008jk@gmail.com" className="rounded-md border border-violet-400/30 px-3 py-2 font-mono text-[10px] text-violet-300 transition hover:bg-violet-400/10">CONTACT ↗</a></div></div></nav>
-    <div className="relative mx-auto max-w-6xl px-5 lg:px-8">
-      <section id="home" className="grid min-h-[640px] items-center gap-12 py-16 lg:items-start lg:grid-cols-[1.1fr_0.9fr] lg:py-20">
+    <nav className="sticky top-0 z-20 border-b border-white/[0.06] bg-[#090a0f]/90 backdrop-blur-xl"><div className="mx-auto flex h-20 w-11/12 max-w-[1400px] items-center justify-between gap-2 px-4 sm:gap-4 sm:px-8 lg:px-12"><a href="#home" aria-label="Bala.dev home" className="brand-lockup flex shrink-0 items-center gap-2 font-serif text-xl font-bold tracking-tight text-white sm:gap-2.5 sm:text-2xl"><img src="/bala-dev-mark.png" alt="" className="brand-mark h-10 w-10 object-contain sm:h-14 sm:w-14" /><span>Bala<span className="text-cyan-300">.dev</span></span></a><div className="hidden min-w-0 flex-1 items-center justify-center gap-3 font-serif text-[9px] font-bold tracking-[0.12em] text-zinc-400 lg:flex xl:gap-6 xl:text-[10px] xl:tracking-[0.16em]">{['HOME','ABOUT','SKILLS','PROJECTS','EXPERIENCE','ACHIEVEMENTS','EDUCATION','CONTACT'].map((x) => <a key={x} href={`#${x.toLowerCase()}`} className="whitespace-nowrap transition-colors hover:text-violet-300">{x}</a>)}</div><div className="flex shrink-0 items-center gap-1.5 sm:gap-3"><button type="button" onClick={() => setIsTerminalOpen(true)} className="rounded-md border border-teal-300/25 px-1.5 py-2 font-mono text-[8px] text-teal-200 transition hover:border-teal-200/60 hover:bg-teal-300/[0.07] sm:px-3 sm:text-[10px]"><span className="sm:hidden">[ TERM ]</span><span className="hidden sm:inline">[ TERMINAL MODE ]</span></button><a href="mailto:balamurugan008jk@gmail.com" className="rounded-md border border-violet-400/30 px-1.5 py-2 font-mono text-[8px] text-violet-300 transition hover:bg-violet-400/10 sm:px-3 sm:text-[10px]">CONTACT ↗</a></div></div></nav>
+    <div className="relative mx-auto w-11/12 max-w-[1400px] px-4 sm:px-8 lg:px-12">
+      <section id="home" className="grid min-h-[640px] grid-cols-1 items-center gap-8 py-12 sm:py-16 lg:grid-cols-2 lg:gap-12 lg:items-start lg:py-20">
         <div>
           <p className="mb-5 font-mono text-xs tracking-[0.28em] text-cyan-400">
             <MatrixText text="01 / ASPIRING SOFTWARE ENGINEER" />
           </p>
           <h1
-            className="relative whitespace-nowrap font-serif text-[clamp(2.5rem,5.5vw,4.6rem)] font-semibold leading-[0.98] tracking-[-0.055em] text-white"
+            className="relative whitespace-nowrap font-serif text-[clamp(1.75rem,5.5vw,4.6rem)] font-semibold leading-[0.98] tracking-[-0.055em] text-white"
             onPointerEnter={nameScramble.startScramble}
             aria-label="Balamurugan K"
           >
@@ -105,7 +105,7 @@ export default function Home() {
             <span>AI Systems Builder</span><span className="text-teal-300/70" aria-hidden="true">·</span>
             <span>DevOps Engineer</span>
           </p>
-          <h2 className="mt-9 max-w-3xl font-serif text-3xl font-semibold tracking-[-0.04em] text-white sm:text-5xl">
+          <h2 className="mt-8 max-w-3xl font-serif text-3xl font-semibold tracking-[-0.04em] text-white sm:mt-9 sm:text-4xl lg:text-5xl">
             Building systems<br />
             <span className="bg-gradient-to-r from-violet-300 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent">that think ahead.</span>
           </h2>
@@ -117,14 +117,14 @@ export default function Home() {
             <a href="https://github.com/bala-coder-dev" target="_blank" rel="noreferrer" className="rounded-md border border-violet-300/30 bg-gradient-to-r from-violet-500/15 to-cyan-500/15 px-5 py-3 font-mono text-xs font-semibold text-zinc-200 transition hover:border-cyan-300/50 hover:from-violet-500/25 hover:to-cyan-500/25">GITHUB ↗</a>
           </div>
         </div>
-        <div className="space-y-4">
-          <DesktopWindow title="terminal — bala@portfolio" className="rounded-xl border border-white/[0.09] bg-[#101117]/90 shadow-2xl shadow-violet-950/20">
-            <div className="min-h-64 p-5 font-mono text-xs leading-8">
+        <div className="min-w-0 space-y-4">
+          <DesktopWindow title="terminal — bala@portfolio" className="w-full min-w-0 rounded-xl border border-white/[0.09] bg-[#101117]/90 shadow-2xl shadow-violet-950/20">
+            <div className="min-h-64 min-w-0 overflow-hidden p-4 font-mono text-[clamp(0.625rem,1vw,0.75rem)] leading-7 sm:p-5 sm:leading-8">
               <p className="text-zinc-600">// welcome.sh</p>
-              <p className="terminal-typewriter mt-3 whitespace-pre-line text-emerald-300" aria-live="polite">
+              <p className="terminal-typewriter mt-3 whitespace-pre-line break-words text-emerald-300" aria-live="polite">
                 {typed}<span className="animate-pulse text-violet-300">▋</span>
               </p>
-              <p className="mt-4 max-w-prose text-[11px] leading-6 text-zinc-400">
+              <p className="mt-4 max-w-prose break-words text-[clamp(0.625rem,0.9vw,0.6875rem)] leading-6 text-zinc-400">
                 Building scalable, production-grade software at the intersection of full-stack engineering and AI — with hands-on experience in real-world projects, competitive hackathons, and industry internships.
               </p>
               <div className="mt-6 grid grid-cols-2 gap-3 border-t border-white/[0.06] pt-4 text-[10px] text-zinc-500">

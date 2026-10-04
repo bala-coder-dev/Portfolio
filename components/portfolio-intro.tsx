@@ -249,8 +249,9 @@ export function PortfolioIntro({ onExitStart }: { onExitStart: () => void }) {
 
           <div className="portfolio-intro__monogram">
             <span className="portfolio-intro__monogram-glint" />
-            <span>BK</span>
-            <small>BACKEND → INTELLIGENCE</small>
+            <span className="portfolio-intro__monogram-orbit portfolio-intro__monogram-orbit--outer"><i /></span>
+            <span className="portfolio-intro__monogram-orbit portfolio-intro__monogram-orbit--inner"><i /></span>
+            <span className="portfolio-intro__monogram-mark">BM</span>
           </div>
 
           <div className="portfolio-intro__cube portfolio-intro__cube--one" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div>

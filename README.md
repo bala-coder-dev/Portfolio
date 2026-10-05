@@ -1,6 +1,6 @@
 # Balamurugan K — Developer Portfolio
 
-A personal portfolio for Balamurugan K, showcasing software engineering projects, experience, skills, and achievements. The site combines an editorial-tech visual style with interactive motion, a terminal-inspired interface, and server-backed portfolio chat and contact features.
+A personal portfolio for  showcasing software engineering projects, experience, skills, and achievements. The site combines an editorial-tech visual style with interactive motion, a terminal-inspired interface, and server-backed portfolio chat and contact features.
 
 **Live site:** [bala-portfolio-jade.vercel.app](https://bala-portfolio-jade.vercel.app)
 

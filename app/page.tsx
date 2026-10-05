@@ -64,7 +64,19 @@ export default function Home() {
   const nameScramble = useTextScramble('Balamurugan K', prefersReducedMotion ?? false)
   const handleIntroExitStart = useCallback(() => setIsIntroExiting(true), [])
   const terminal = '> building scalable, production-grade software\n> full-stack engineering × AI systems\n> status: open_to_opportunities = true'
-  useEffect(() => { let i = 0; const id = setInterval(() => { setTyped(terminal.slice(0, i)); i += 1; if (i > terminal.length) clearInterval(id) }, 24); return () => clearInterval(id) }, [])
+  useEffect(() => {
+    if (!isIntroExiting) return
+
+    let characterIndex = 0
+    setTyped('')
+    const intervalId = window.setInterval(() => {
+      characterIndex += 1
+      setTyped(terminal.slice(0, characterIndex))
+      if (characterIndex >= terminal.length) window.clearInterval(intervalId)
+    }, 24)
+
+    return () => window.clearInterval(intervalId)
+  }, [isIntroExiting, terminal])
   useEffect(() => { window.history.replaceState(null, '', '#home'); window.scrollTo({ top: 0, behavior: 'instant' }) }, [])
   const filters = ['ALL', 'AI / ML', 'FULL STACK']
   const visibleProjects = activeFilter === 'ALL' ? projects : projects.filter((p) => activeFilter === 'AI / ML' ? ['SME Nexus AI', 'TruthLens', 'CivicPulse'].includes(p.name) : p.name === 'PR Review Copilot')

@@ -262,7 +262,7 @@ export function PortfolioIntro({ onExitStart }: { onExitStart: () => void }) {
         <div className="portfolio-intro__caption">
           <p className="portfolio-intro__eyebrow"><i /> SOFTWARE ENGINEER <span>·</span> AI SYSTEMS BUILDER</p>
           <h1>Building what&apos;s <span>next.</span></h1>
-          <p className="portfolio-intro__name">Balamurugan K <span>— Chennai, India</span></p>
+          <p className="portfolio-intro__name">Balamurugan K</p>
         </div>
       </div>
 

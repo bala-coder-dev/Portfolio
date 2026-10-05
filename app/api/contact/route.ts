@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 
-const recipient = 'balamurugan008jk@gmail.com'
 const resendEndpoint = 'https://api.resend.com/emails'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -70,9 +69,8 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({
         from,
-        to: [recipient],
-        reply_to: email,
-        subject: `Portfolio message from ${name}`,
+        to: ['balamurugan008jk@gmail.com'],
+        subject: `Portfolio message from ${name} (${email})`,
         text: [
           'NEW PORTFOLIO MESSAGE',
           '',

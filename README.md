@@ -2,7 +2,6 @@
 
 A personal portfolio for  showcasing software engineering projects, experience, skills, and achievements. The site combines an editorial-tech visual style with interactive motion, a terminal-inspired interface, and server-backed portfolio chat and contact features.
 
-**Live site:** [bala-portfolio-jade.vercel.app](https://bala-portfolio-jade.vercel.app)
 
 **Source:** [github.com/bala-coder-dev/Portfolio](https://github.com/bala-coder-dev/Portfolio)
 

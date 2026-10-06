@@ -23,8 +23,8 @@ const contactLinks = [
   },
   {
     label: 'LINKEDIN',
-    value: 'linkedin.com/in/balamurugan-k',
-    href: 'https://linkedin.com/in/balamurugan-k',
+    value: 'linkedin.com/in/balamurugan-k-8455b6371',
+    href: 'https://www.linkedin.com/in/balamurugan-k-8455b6371/',
     Icon: BriefcaseBusiness,
   },
 ]
